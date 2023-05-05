@@ -1,0 +1,67 @@
+#include <atcoder/all>
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+// 1 以上 N以下の素数をvector<long long>で返す。
+// 計算量:Nloglog N のため、2sでN = 10の6乗程度が限界
+
+vector<long long> Eratosthenes(int N) {
+  // テーブル
+  vector<bool> isprime(N + 1, true);
+ 
+  // 0, 1 は予めふるい落としておく
+  isprime[0] = isprime[1] = false;
+ 
+  // ふるい
+  for (int p = 2; p <= N; ++p) {
+    // すでに合成数であるものはスキップする
+    if (!isprime[p])
+      continue;
+ 
+    // p 以外の p の倍数から素数ラベルを剥奪
+    for (int q = p * 2; q <= N; q += p) {
+      isprime[q] = false;
+    }
+  }
+ 
+  // 1 以上 N 以下の整数が素数の配列を返却
+  vector<long long> primeArray;
+  for (int p = 2; p <= N; ++p) {
+    if (isprime[p])
+      primeArray.push_back(p);
+  }
+  return primeArray;
+}
+
+int main() {
+  // 入力
+  ll N;
+  cin >> N;
+
+  ll ans = 0;
+  vector<ll> prime = Eratosthenes(1000000);
+  int N_size = prime.size();
+  for (ll i = 0; i < N_size; ++i) {
+    if (1000 < prime[i]) {
+      break;
+    }
+    for (ll j = i + 1; j < N_size; ++j) {
+      if (10000 < prime[j]) {
+        break;
+      }
+
+      for (ll k = j + 1; k < N_size; ++k) {
+        ll temp = N / (prime[i] * prime[i] * prime[j]);
+        if (temp < prime[k] * prime[k]) {
+          break;
+        }
+        //cout << prime[i] << "  " <<  prime[j] << "  " <<  prime[k] << endl;
+        ++ans;
+      }
+    }
+  }
+  cout << ans << endl;
+  return 0;
+}
