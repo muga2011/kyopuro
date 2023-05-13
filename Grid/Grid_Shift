@@ -1,0 +1,14 @@
+vector<vector<int>> grid_shift(vector<vector<int>> in, int a, int b) {
+  // 行を下にa行、右にb行　移動する。
+  // ABC300_B　は行を上に、列を左に移動するが問題ない。
+  // → 上にi行シフト　 は　下に(h - i)行シフトすることと同じであるため。
+  int h = in.size(), w = in[0].size();
+  vector<vector<int>> ret(h, vector<int>(w));
+ 
+  for (int i = 0; i < h; ++i) {
+    for (int j = 0; j < w; ++j) {
+      ret[i][j] = in[(i + a) % h][(j + b) % w];
+    }
+  }
+  return ret;
+}
