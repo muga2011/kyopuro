@@ -1,0 +1,25 @@
+ //　　座標の中に収まっているかチェックする
+ auto ok = [&](int i, int j) { return 0 <= i and i < H and 0 <= j and j < W; };
+  
+  
+ /*
+ 矢印みたいな、ばつ印を検出する方法(ABC300_C)
+ 右上、右下、左上、左下をチェックするラムダ式を作って、test(i, j, 1)に当てはまれば、whileを使ってばつ印の大きさを求める。
+ #.#
+ .#.
+ #.#
+ */
+ auto ok = [&](int i, int j) { return 0 <= i and i < H and 0 <= j and j < W; };
+ //中心の#から長さdマス目のクロスが存在すればtrueを返し、そうでなければfalseを返す。
+ auto test = [&](int i, int j, int d) {
+    // 右上、右下、左上、左下をチェックする。
+    for (auto& x : vector{+d, -d}) {
+      for (auto& y : vector{+d, -d}) {
+        int s = i + x, t = j + y;
+        if (!ok(s, t) or g[s][t] != '#') return false;
+      }
+    }
+    return true;
+ };   
+ 
+ 
