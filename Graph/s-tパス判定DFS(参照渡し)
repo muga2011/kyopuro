@@ -5,7 +5,6 @@ using namespace std;
 using ll = long long;
 // 1. s-t パスの存在判定
 // 頂点数が N、辺数が M の単純有向グラフで頂点s-tパスが存在するか判定する
-// 経路復元は動作確認してない笑
 
 void dfs(int v, vector<vector<int>> &G, vector<int> &seen, vector<int> &prev) {
   // 頂点vから伸びる辺を探索する。頂点vを探索済みにする。
@@ -22,7 +21,6 @@ void dfs(int v, vector<vector<int>> &G, vector<int> &seen, vector<int> &prev) {
 // 経路復元
 vector<int> getPath(vector<int> &prev, int start, int end) {
   vector<int> path;
-  // prev
   // vector<int> path = {end,
   // １つ左の遷移元,１つ左の遷移元,...,start}なvectorを作って、reverseして返却する。
   int current = end;
@@ -56,9 +54,12 @@ int main() {
 
   // 頂点sを始点としてDFSをする。
   dfs(s, G, seen, prev);
-  if (seen[t]) {
-    cout << "Yes" << endl;
-  } else {
-    cout << "No" << endl;
+  // s-tの経路復元して出力
+  auto keiro = getPath(prev, s, t);
+  int num = keiro.size();
+  cout << num << endl;
+  for (auto &x : keiro) {
+    cout << x << " ";
   }
+  cout << endl;
 }
