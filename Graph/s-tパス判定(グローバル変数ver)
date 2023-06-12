@@ -1,0 +1,71 @@
+#include <bits/stdc++.h>
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+// 1. s-t パスの存在判定
+// 頂点数が N、辺数が M の単純有向グラフで頂点s-tパスが存在するか判定する
+// 経路復元は動作確認してない笑
+
+// グラフを表現する隣接リスト
+vector<vector<int>> G;
+// 各頂点が探索済みか
+vector<int> seen;
+// 各頂点の遷移元を保存する。グローバル変数で名前をprevにすると
+// std::prevと被っているため、error: reference to 'prev' is ambiguousで死ぬ
+vector<int> prior;
+
+void dfs(int v) {
+  // 頂点vから伸びる辺を探索する。頂点vを探索済みにする。
+  seen[v] = 1;
+  for (auto &v2 : G[v]) {
+    if (seen[v2]) {
+      continue;
+    }
+    prior[v2] = v;
+    dfs(v2);
+  }
+}
+
+// 経路復元
+vector<int> getPath(int start, int end) {
+  vector<int> path;
+  // vector<int> path = {end,
+  // １つ左の遷移元,１つ左の遷移元,...,start}なvectorを作って、reverseして返却する。
+  int current = end;
+
+  while (current != start) {
+    path.push_back(current);
+    current = prior[current];
+  }
+
+  path.push_back(start);
+  reverse(path.begin(), path.end());
+
+  return path;
+}
+
+int main() {
+  int N, M, s, t;
+  cin >> N >> M >> s >> t;
+  G = vector<vector<int>>(N); // グラフを表現する隣接リスト
+  for (int i = 0; i < M; ++i) {
+    int a, b;
+    cin >> a >> b;
+    // 頂点 a から頂点 b への辺を張る
+    G[a].push_back(b);
+  }
+
+  // 頂点が探索済みなら1, そうでないなら0
+  seen = vector<int>(N, 0);
+  // 各頂点の遷移元を保存する
+  prior = vector<int>(N, -1);
+
+  // 頂点sを始点としてDFSをする。
+  dfs(s);
+  if (seen[t]) {
+    cout << "Yes" << endl;
+  } else {
+    cout << "No" << endl;
+  }
+}
