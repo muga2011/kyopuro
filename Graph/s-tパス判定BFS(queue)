@@ -1,0 +1,85 @@
+#include <bits/stdc++.h>
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+// 1. s-t パスの存在判定
+// 頂点数が N、辺数が M の単純有向グラフで頂点s-tパスが存在するか判定する
+// 経路復元は動作確認してない笑
+
+// void dfs(int v, vector<vector<int>> &G, vector<int> &seen, vector<int> &prev)
+// {
+//   // 頂点vから伸びる辺を探索する。頂点vを探索済みにする。
+//   seen[v] = 1;
+//   for (auto &v2 : G[v]) {
+//     if (seen[v2]) {
+//       continue;
+//     }
+//     prev[v2] = v;
+//     dfs(v2, G, seen, prev);
+//   }
+// }
+
+// 経路復元
+vector<int> getPath(vector<int> &prev, int start, int end) {
+  vector<int> path;
+  // vector<int> path = {end,
+  // １つ左の遷移元,１つ左の遷移元,...,start}なvectorを作って、reverseして返却する。
+  int current = end;
+
+  while (current != start) {
+    path.push_back(current);
+    current = prev[current];
+  }
+
+  path.push_back(start);
+  reverse(path.begin(), path.end());
+
+  return path;
+}
+
+int main() {
+  int N, M, s, t;
+  cin >> N >> M >> s >> t;
+  vector<vector<int>> G(N); // グラフを表現する隣接リスト
+  for (int i = 0; i < M; ++i) {
+    int a, b;
+    cin >> a >> b;
+    // 頂点 a から頂点 b への辺を張る
+    G[a].push_back(b);
+  }
+
+  // 頂点が探索済みなら1, そうでないなら0
+  vector<int> seen(N, 0);
+  // 各頂点の遷移元を保存する
+  vector<int> prev(N, -1);
+
+  // 素直にBFS
+  queue<int> que;
+  seen[s] = 1;
+  que.push(s);
+
+  while (que.size() > 0) {
+    int v = que.front();
+    que.pop();
+
+    for (auto &to : G[v]) {
+      if (seen[to]) {
+        continue;
+      }
+
+      seen[to] = 1;
+      prev[to] = v;
+      que.push(to);
+    }
+  }
+
+  // s-tの経路復元して出力
+  auto keiro = getPath(prev, s, t);
+  int num = keiro.size();
+  cout << num << endl;
+  for (auto &x : keiro) {
+    cout << x << " ";
+  }
+  cout << endl;
+}
