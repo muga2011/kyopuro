@@ -1,0 +1,99 @@
+#include <bits/stdc++.h>
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+// 二部グラフは与えらえれるグラフが非連結な（全ての頂点が繋がってない）こともある。その場合は、全てのグラフが2部グラフか判定する。
+
+// 経路復元
+vector<int> getPath(vector<int> &prev, int start, int end) {
+    vector<int> path;
+    // vector<int> path =
+    // {end,１つ左の遷移元,１つ左の遷移元,...,start}なvectorを作って、reverseして返却する。
+    int current = end;
+
+    while(current != start) {
+        // endから戻ってstartが見えたら終了
+        path.push_back(current);
+        current = prev[current];
+    }
+    // startを追加
+    path.push_back(start);
+    reverse(path.begin(), path.end());
+
+    return path;
+}
+
+int main() {
+    int N, M;
+    cin >> N >> M;
+    vector<vector<int>> G(N); // グラフを表現する隣接リスト
+    for(int i = 0; i < M; ++i) {
+        int a, b;
+        cin >> a >> b;
+        // 無向グラフで草
+        G[a].push_back(b);
+        G[b].push_back(a);
+    }
+
+    // 頂点が探索済みなら1, そうでないなら0
+    vector<int> seen(N, 0);
+    // 各頂点の遷移元を保存する
+    vector<int> prev(N, -1);
+    // 二部グラフの判定(白,黒を0,1で保存)
+    vector<int> color(N, -1);
+    // 二部グラフならtrue,そうでないならfalse。
+    bool flag = true;
+
+    // 　各頂点からBFSをする。
+    //  二部グラフは与えらえれるグラフが非連結な（全ての頂点が繋がってない）こともあるため。
+    for(int i = 0; i < N; ++i) {
+        if(seen[i]) {
+            // 頂点iが探索済みならスキップ
+            continue;
+        }
+        // 素直にBFSで開始頂点を設定する。(テンプレ)
+        queue<int> que;
+        seen[i] = 1;
+        que.push(i);
+        // 開始地点は白(0)でぬる
+        color[i] = 0;
+        while(que.size() > 0) {
+            int v = que.front();
+            que.pop();
+            for(auto &to : G[v]) {
+                if(seen[to]) {
+                    // 頂点toが探索済みの場合
+                    // 色を比較して2部グラフであるかチェック
+                    if(color[v] == color[to]) {
+                        flag = false;
+                    }
+                    continue;
+                } else {
+                    // 頂点toが未探索の場合
+                    // 色を塗る
+                    color[to] = (color[v] + 1) % 2;
+                    // ↓テンプレ
+                    seen[to] = 1;
+                    prev[to] = v;
+                    que.push(to);
+                }
+            }
+        }
+    }
+
+    if(flag) {
+        cout << "Yes" << endl;
+    } else {
+        cout << "No" << endl;
+    }
+
+    // s-tの経路復元して出力
+    // auto keiro = getPath(prev, s, t);
+    // int num = keiro.size();
+    // cout << num << endl;
+    // for (auto &x : keiro) {
+    //   cout << x << " ";
+    // }
+    // cout << endl;
+}
