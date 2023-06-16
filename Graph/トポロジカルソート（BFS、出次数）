@@ -1,0 +1,83 @@
+#include <bits/stdc++.h>
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+
+// グラフ、頂点の入次数、頂点数を受け取り、そのトポロジカルソートを記録した配列を返す関数
+vector<int> topological_sort(vector<vector<int>> &G, vector<int> &indegree) {
+  // トポロジカルソートを記録する配列
+  vector<int> sorted_vertices;
+
+  int N = G.size();
+  // 初期状態で入次数が0の頂点を処理待ち頂点としてキューに追加する
+  queue<int> que;
+  for (int i = 0; i < N; i++) {
+    if (indegree[i] == 0) {
+      que.push(i);
+    }
+  }
+
+  // キューが空になるまで操作を繰り返せばOK
+  while (que.size() > 0) {
+    // キューの先頭の頂点を取り出す
+    int v = que.front();
+    que.pop();
+    // 頂点vを配列の末尾に追加する
+    sorted_vertices.push_back(v);
+    // その頂点と繋がっている頂点の入次数を減らし、0になればキューに追加
+    for (auto &to : G[v]) {
+      indegree[to] -= 1;
+      if (indegree[to] == 0) {
+        que.push(to);
+      }
+    }
+  }
+
+  // トポロジカルソートを返す
+  reverse(sorted_vertices.begin(), sorted_vertices.end());
+  return sorted_vertices;
+}
+
+int main() {
+  int N, M;
+  cin >> N >> M;
+  vector<vector<int>> G(N); // グラフを表現する隣接リスト
+  vector<int> deg(N, 0); // deg[v]：頂点 v の入次数(矢印を出す側)
+  for (int i = 0; i < M; ++i) {
+    int a, b;
+    cin >> a >> b;
+    G[b].push_back(a); // 矢印を受け取る側から出す側が分かるようにする。
+    // 頂点 a の出次数を 1 増やす
+    deg[a]++;
+  }
+  // 問題文の指示より、隣接リストの中身を昇順にソートしておく
+  for (int i = 0; i < N; ++i) {
+    sort(G[i].begin(), G[i].end());
+  }
+
+  // 頂点が探索済みなら1, そうでないなら0
+  vector<int> seen(N, 0);
+  // 各頂点の遷移元を保存する
+  vector<int> prev(N, -1);
+  // 二部グラフの判定(白,黒を0,1で保存)
+  vector<int> color(N, -1);
+  // 二部グラフならtrue,そうでないならfalse。
+  bool flag = true;
+
+  // 　BFSをする。
+  auto topological_sorted = topological_sort(G, deg);
+
+  for (auto &x : topological_sorted) {
+    cout << x << " ";
+  }
+  puts("");
+  // s-tの経路復元して出力
+  // auto keiro = getPath(prev, s, t);
+  // int num = keiro.size();
+  // cout << num << endl;
+  // for (auto &x : keiro) {
+  //   cout << x << " ";
+  // }
+  // cout << endl;
+}
