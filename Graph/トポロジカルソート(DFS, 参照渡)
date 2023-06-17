@@ -1,0 +1,79 @@
+#include <bits/stdc++.h>
+#define REP(i, n) for (int i = 0; (i) < (int)(n); ++(i))
+#define REP3(i, m, n) for (int i = (m); (i) < (int)(n); ++(i))
+#define REP_R(i, n) for (int i = (int)(n)-1; (i) >= 0; --(i))
+#define REP3R(i, m, n) for (int i = (int)(n)-1; (i) >= (int)(m); --(i))
+#define ALL(x) std::begin(x), std::end(x)
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+
+// 頂点vからDFS。
+void topological_sort(int v, vector<vector<int>> &G, vector<int> &seen,
+                      vector<int> &order) {
+
+  // 頂点vを探索済みにする。
+  seen[v] = 1;
+
+  // 頂点 v に隣接する頂点 to について、
+  for (auto to : G[v]) {
+    // to が探索済みならばスキップ
+    if (seen[to]) {
+      continue;
+    }
+    // 未探索ならDFSする。
+    topological_sort(to, G, seen, order);
+  }
+  // 帰りがけ順で頂点を追加すれば、矢印が右から左でトポロジカルソートしたことになる。
+  order.push_back(v);
+  return;
+}
+
+int main() {
+  int N, M;
+  cin >> N >> M;
+  vector<vector<int>> G(N); // グラフを表現する隣接リスト
+  vector<int> deg(N, 0);
+  for (int i = 0; i < M; ++i) {
+    int a, b;
+    cin >> a >> b;
+    //出次数だとG[b].push_back(a)だから入次数でG[a].push_back(b)の方が好き。
+    //出自数は矢印を受け取る側から出す側をたどれるようにするため。
+    G[a].push_back(b);
+    deg[b]++; // 頂点 b の入次数を 1 増やす
+  }
+  // 問題文の指示より、隣接リストの中身を昇順にソートしておく
+  for (int i = 0; i < N; ++i) {
+    sort(G[i].begin(), G[i].end());
+  }
+
+  // 頂点が探索済みなら1, そうでないなら0
+  vector<int> seen(N, 0);
+  // 各頂点の遷移元を保存する
+  vector<int> prev(N, -1);
+  // 二部グラフの判定(白,黒を0,1で保存)
+  vector<int> color(N, -1);
+  // 二部グラフならtrue,そうでないならfalse。
+  bool flag = true;
+  // トポロジカルソートを記録する配列
+  vector<int> order;
+
+  // 　DFSをする。矢印が右から左でトポロジカルソートしたことになる。
+  for (int i = 0; i < N; ++i) {
+    if (seen[i]) {
+      // 探索済みならスキップ。
+      continue;
+    }
+    // 未探索ならDFSする。
+    topological_sort(i, G, seen, order);
+  }
+
+  // 配列 order を反転させる
+  reverse(order.begin(), order.end());
+  for (auto &x : order) {
+    cout << x << " ";
+  }
+  puts("");
+  return 0;
+}
