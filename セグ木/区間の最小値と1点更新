@@ -1,0 +1,104 @@
+// 区間の最小値取得と更新。
+// https://tsutaj.hatenablog.com/entry/2017/03/29/204841 を写経。
+// 動作確認
+// https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_2_A&lang=ja
+// Language: C++17
+
+#include <bits/stdc++.h>
+#define REP(i, n) for (int i = 0; (i) < (int)(n); ++(i))
+#define REP3(i, m, n) for (int i = (m); (i) < (int)(n); ++(i))
+#define REP_R(i, n) for (int i = (int)(n)-1; (i) >= 0; --(i))
+#define REP3R(i, m, n) for (int i = (int)(n)-1; (i) >= (int)(m); --(i))
+#define ALL(x) std::begin(x), std::end(x)
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+int N, Q;
+int const INF = INT_MAX;
+struct SegmentTree {
+public:
+  // privateがベストだけど確認できるようにpublicにしている。
+  int n;            // セグメント木の要素数
+  vector<int> node; // セグメント木の配列
+
+public:
+  SegmentTree(vector<int> v) {
+    // 元配列 vからセグメント木の配列を作る
+    // セグメント木の再下段にはノードがN個ある
+    // それより上の段のノードは全部でN-1個あるのが大事な性質。（メルセンヌ数）
+    // 再下段のノード数は元配列のサイズ <=「２の冪」を満たす最小の２の冪である。
+    //  ex)元配列のサイズ=7なら、２の冪=8である。
+    // （２の冪：1, 2, 4, 8,16,...と2だけを掛け合わせた数）
+    int sz = v.size();
+    // うっかりint n = 1;で再定義するとバグるから気をつけろ
+    n = 1; // 再下段のノード数 nを計算。
+    while (n < sz) {
+      n *= 2;
+    }
+    // セグメント木全体のノード数は 2n -1個である。
+    node.resize((2 * n) - 1, INF);
+
+    // 再下段に値を入れる。
+    // 再下段より上の段は自分の子の2値を参照して入れれば良い。
+    for (int i = 0; i < sz; ++i) {
+      node[(n - 1) + i] = v[i];
+    }
+    for (int i = n - 2; i >= 0; --i) {
+      node[i] = min(node[(2 * i) + 1], node[(2 * i) + 2]);
+    }
+  }
+  // x番目の値をvalに更新する。
+  void update(int x, int val) {
+    // xが1-indexの場合は--x;をすること
+    x += (n - 1); // 再下段のノードにアクセス
+    node[x] = val;
+    while (x > 0) {
+      x = (x - 1) / 2;
+      node[x] = min(node[(2 * x) + 1], node[(2 * x) + 2]);
+    }
+  }
+  // 要求区間 [a, b) 中の要素の最小値を答える( [a, b)は半開区間)
+  // k := 自分がいるノードのインデックス
+  // 対象区間は [l, r) にあたる
+  int getmin(int a, int b, int k = 0, int l = 0, int r = -1) {
+    if (r < 0) {
+      // 最初に呼び出された時の対象区間は[0, n)
+      r = n;
+    }
+    if (r <= a || b <= l) {
+      // 要求区間と対象区間が交わらない　-> 適当に返す。
+      return INF;
+    }
+    if (a <= l && r <= b) {
+      // 要求区間が対象区間を完全に覆っている -> 対象区間を答えの計算に使う
+      return node[k];
+    }
+
+    // 要求区間が対象区間の一部を覆っている。 -> 子について探索を行う
+    // 左側の子を vl ・ 右側の子を vr としている
+    // 新しい対象区間は、現在の対象区間を半分に割ったもの
+    int vl = getmin(a, b, (2 * k) + 1, l, (l + r) / 2);
+    int vr = getmin(a, b, (2 * k) + 2, (l + r) / 2, r);
+    return min(vl, vr);
+  }
+};
+int main() {
+  cin >> N >> Q;
+  SegmentTree seg(vector<int>(N, INF));
+  for (int i = 0; i < Q; i++) {
+    int c, x, y;
+    cin >> c >> x >> y;
+    if (c == 0)
+      seg.update(x, y);
+    else
+      cout << seg.getmin(x, y + 1) << endl;
+  }
+  // cout << endl;
+  // cout << seg.n << endl;
+  // cout << endl;
+  // for (int i = 0; i < seg.n; i++) {
+  //   cout << "インデックス:" << i << " " << seg.node[i] << endl;
+  //   ;
+  // }
+}
