@@ -17,7 +17,7 @@ using ll = long long;
 int N, Q;
 int const INF = INT_MAX;
 struct SegmentTree {
-  // セグメント木は完全2分木の再下段（葉）に元配列を入れることで、区間に対する処理を効率化する
+  // セグメント木は完全2分木の再下段（葉）に配列を入れることで、区間に対する処理を効率化する
   // 0-indexのため、入力が1-indexか確認すること
 public:
   // privateがベストだけど確認できるようにpublicにしている。
