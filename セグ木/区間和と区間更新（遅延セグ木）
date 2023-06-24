@@ -1,0 +1,150 @@
+// 区間の和と区間更新
+// 動作確認
+// https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_2_G
+// Language: C++17
+
+#include <bits/stdc++.h>
+#define REP(i, n) for (int i = 0; (i) < (int)(n); ++(i))
+#define REP3(i, m, n) for (int i = (m); (i) < (int)(n); ++(i))
+#define REP_R(i, n) for (int i = (int)(n)-1; (i) >= 0; --(i))
+#define REP3R(i, m, n) for (int i = (int)(n)-1; (i) >= (int)(m); --(i))
+#define ALL(x) std::begin(x), std::end(x)
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+int N, Q;
+int const INF = INT_MAX;
+struct LazySegmentTree {
+  // セグメント木は完全2分木の再下段（葉）に配列を入れることで、区間に対する処理を効率化する
+  // 入力が1-indexなら0-indexに変換しろ。
+public:
+  // privateがベストだけど確認できるようにpublicにしている。
+  int n;                 // セグメント木の再下段の要素数
+  vector<ll> node, lazy; // セグメント木の配列
+
+public:
+  LazySegmentTree(vector<ll> v) {
+    // 元配列 vからセグメント木の配列を作る
+    // セグメント木の再下段にはノードがN個ある
+    // それより上の段のノードは全部でN-1個あるのが大事な性質。（メルセンヌ数）
+    // 再下段のノード数は元配列のサイズ <=「２の冪」を満たす最小の２の冪である。
+    //  ex)元配列のサイズ=7なら、２の冪=8である。
+    // （２の冪：1, 2, 4, 8,16,...と2だけを掛け合わせた数）
+    int sz = v.size();
+    // うっかりint n = 1;で再定義するとバグるから気をつけろ
+    n = 1; // 再下段のノード数 nを計算。
+    while (n < sz) {
+      n *= 2;
+    }
+    // セグメント木全体のノード数は 2n -1個である。
+    // 再下段で元配列vが入らないノードはここで初期化したままです。
+    node.resize((2 * n) - 1, 0);
+    lazy.resize((2 * n) - 1, 0);
+
+    // 再下段に値を入れる。
+    // 再下段より上の段は自分の子の2値を参照して入れれば良い。
+    for (int i = 0; i < sz; ++i) {
+      node[(n - 1) + i] = v[i];
+    }
+    // 再下段より上を初期化
+    for (int i = n - 2; i >= 0; --i) {
+      node[i] = node[(2 * i) + 1] + node[(2 * i) + 2];
+    }
+  }
+
+  // k 番目のノードについて遅延評価を行う
+  void eval(int k, int l, int r) {
+
+    // 遅延配列が空でない場合、自ノード及び子ノードへの
+    // 値の伝播が起こる
+    if (lazy[k] != 0) {
+      node[k] += lazy[k];
+      // 最下段かどうかのチェックをしよう
+      // 子ノードは親ノードの 1/2 の範囲であるため、
+      // 伝播させるときは半分にする
+      if (r - l > 1) {
+        lazy[(2 * k) + 1] += lazy[k] / 2;
+        lazy[(2 * k) + 2] += lazy[k] / 2;
+      }
+
+      // 伝播が終わったので、自ノードの遅延配列を空にする
+      lazy[k] = 0;
+    }
+  }
+  // 区間加算。
+  void add(int a, int b, ll x, int k = 0, int l = 0, int r = -1) {
+    //
+    if (r < 0){
+      // 最初に呼び出された時の対象区間は[0, n)
+      r = n;
+    }
+    // k 番目のノードに対して遅延評価を行う
+    eval(k, l, r);
+
+    // 範囲外なら何もしない
+    if (b <= l || r <= a){
+      return;
+    }
+    if (a <= l && r <= b) {
+      // 完全に被覆しているならば、遅延配列に値を入れた後に評価
+      lazy[k] += (r - l) * x;
+      eval(k, l, r);
+    } else {
+      // そうでないならば、子ノードの値を再帰的に計算して、
+      // 計算済みの値をもらってくる
+      add(a, b, x, (2 * k) + 1, l, (l + r) / 2);
+      add(a, b, x, (2 * k) + 2, (l + r) / 2, r);
+      node[k] = node[(2 * k) + 1] + node[(2 * k) + 2];
+    }
+  }
+
+  ll getSum(int a, int b, int k = 0, int l = 0, int r = -1) {
+    if (r < 0) {
+      // 最初に呼び出された時の対象区間は[0, n)
+      r = n;
+    }
+    if (b <= l || r <= a) {
+      return 0;
+    }
+
+    // 関数が呼び出されたら評価！
+    eval(k, l, r);
+    if (a <= l && r <= b) {
+      return node[k];
+    }
+    ll vl = getSum(a, b, (2 * k) + 1, l, (l + r) / 2);
+    ll vr = getSum(a, b, (2 * k) + 2, (l + r) / 2, r);
+    return vl + vr;
+  }
+};
+int main() {
+  cin >> N >> Q;
+  LazySegmentTree seg(vector<ll>(N, 0));
+  // 入力が1-indexなら0-indexに変換しろ。
+  for (int i = 0; i < Q; i++) {
+    int c, s, t, x;
+    cin >> c >> s >> t;
+    --s, --t;
+    if (c == 0) {
+      cin >> x;
+      seg.add(s, t + 1, x);
+    } else {
+      cout << seg.getSum(s, t + 1) << endl;
+    }
+  }
+  // // ↓セグ木の再下段のノード数と中身を出力。
+  // cout << endl;
+  // cout << seg.n << endl;
+  // cout << endl;
+  // // 再下段を出力
+  // for (int i = 0; i < seg.n; ++i) {
+  //   int nodeNum = seg.n - 1; // 再下段の最初のノード番号
+  //   cout << "インデックス:" << i << " " << seg.node[nodeNum + i] << endl;
+  // }
+  // // セグ木を根から全て出力
+  // cout << "セグ木を根から全て出力" << endl;
+  // for (int i = 0; i < seg.n * 2 -1; ++i) {
+  //   cout << "インデックス:" << i << " " << seg.node[i] << endl;
+  // }
+}
