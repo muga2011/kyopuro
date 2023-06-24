@@ -17,6 +17,8 @@ using ll = long long;
 int N, Q;
 int const INF = INT_MAX;
 struct SegmentTree {
+  // セグメント木は完全2分木の再下段（葉）に元配列を入れることで、区間に対する処理を効率化する
+  // 0-indexのため、入力が1-indexか確認すること
 public:
   // privateがベストだけど確認できるようにpublicにしている。
   int n;            // セグメント木の要素数
@@ -50,7 +52,6 @@ public:
   }
   // x番目の値をvalに更新する。
   void update(int x, int val) {
-    // xが1-indexの場合は--x;をすること
     x += (n - 1); // 再下段のノードにアクセス
     node[x] = val;
     while (x > 0) {
@@ -94,6 +95,7 @@ int main() {
     else
       cout << seg.getmin(x, y + 1) << endl;
   }
+  // ↓セグ木のノード数と中身を出力。
   // cout << endl;
   // cout << seg.n << endl;
   // cout << endl;
