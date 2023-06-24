@@ -1,6 +1,6 @@
 // 区間の和と一点加算
 // 動作確認
-// https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_2_B&lang=ja
+// https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_2_B
 // Language: C++17
 
 #include <bits/stdc++.h>
