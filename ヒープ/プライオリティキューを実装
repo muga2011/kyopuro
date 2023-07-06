@@ -1,0 +1,82 @@
+// https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_9_C
+#include <bits/stdc++.h>
+#define REP(i, n) for (int i = 0; (i) < (int)(n); ++(i))
+#define REP3(i, m, n) for (int i = (m); (i) < (int)(n); ++(i))
+#define REP_R(i, n) for (int i = (int)(n)-1; (i) >= 0; --(i))
+#define REP3R(i, m, n) for (int i = (int)(n)-1; (i) >= (int)(m); --(i))
+#define ALL(x) std::begin(x), std::end(x)
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+// ヒープ化: dequedeqを2分木とみて、それがヒープ木の性質を満たすように変換する。
+// 最大ヒープ木なら親の値は子以上である。
+// ヒープ木の部分木はヒープ木の性質を満たす。
+// -> deqがヒープ木であるなら、deq[i]を根とした部分木もヒープ木である。
+void heapify(deque<int> &deq, int n, int i) {
+  // n: ヒープ木のサイズ(dequeの前からn個の要素をヒープ木とみなす)
+  // i: deq[i]を根とした部分木で最大ヒープが成り立つようかチェックする
+  // largest: 親と子の中で最大の値を持つindex
+  int largest = i;
+  int left = 2 * i + 1;
+  int right = 2 * i + 2;
+
+  if (left < n && deq[left] > deq[largest]) {
+    largest = left;
+  }
+
+  if (right < n && deq[right] > deq[largest]) {
+    largest = right;
+  }
+
+  if (largest != i) {
+    std::swap(deq[i], deq[largest]);
+    // 子と交換された親に対して、最大ヒープ木が成り立つかチェック
+    heapify(deq, n, largest);
+  }
+}
+
+// ヒープ木の根の値を取得して除去した後も、ヒープ木の性質を満たすようにしたい。
+// 「ヒープ木の根（dequeの最初）」を「ヒープ木の一番右下の葉（dequeの末尾）」を交換
+// dequeの末尾の値を取得してから、削除 -> dequeの最初を指定してヒープ化すればOK
+int getRoot(deque<int> &deq) {
+  int size = deq.size();
+  int root = deq[0];
+  std::swap(deq[0], deq[size - 1]);
+  deq.pop_back();
+  heapify(deq, size - 1, 0);
+  return root;
+}
+
+int main() {
+  string xx;
+  std::deque<int> deq;
+  while (true) {
+    cin >> xx;
+    if (xx == "end") {
+      break;
+    }
+    if (xx == "insert") {
+      // とりあえず、配列の先頭にぶちこむとうまくいかないパターンがあります。
+      // insertをlogNで処理したい。
+      // 末尾にinsertして、親に対してheapifyを根に到達するまで繰り返す。
+      int temp;
+      cin >> temp;
+      deq.push_back(temp);
+      // ヒープ木の右下にinsertしたときのindex
+      int index = deq.size() - 1;
+      while (index) {
+        // 0-indexで子から親のindexを計算。
+        int parent = (index - 1) / 2;
+        heapify(deq, (int)deq.size(), parent);
+        // parent = 0 でheapifyするまで繰り返す。
+        index = parent; 
+      }
+    }
+    if (xx == "extract") {
+      int temp = getRoot(deq);
+      cout << temp << endl;
+    }
+  }
+  return 0;
+}
