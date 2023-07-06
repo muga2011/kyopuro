@@ -1,0 +1,60 @@
+// https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_9_B
+#include <bits/stdc++.h>
+#define REP(i, n) for (int i = 0; (i) < (int)(n); ++(i))
+#define REP3(i, m, n) for (int i = (m); (i) < (int)(n); ++(i))
+#define REP_R(i, n) for (int i = (int)(n)-1; (i) >= 0; --(i))
+#define REP3R(i, m, n) for (int i = (int)(n)-1; (i) >= (int)(m); --(i))
+#define ALL(x) std::begin(x), std::end(x)
+using namespace std;
+// #include <atcoder/all>
+// using namespace atcoder;
+using ll = long long;
+// ヒープ化: 配列arrを2分木とみて、それがヒープ木の性質を満たすように変換する。
+// 最大ヒープ木なら親の値は子以上である。
+// ヒープ木の部分木はヒープ木の性質を満たす。
+// -> arrがヒープ木であるなら、arr[i]を根とした部分木もヒープ木である。
+void heapify(vector<int> &arr, int n, int i) {
+  // n: ヒープ木のサイズ(配列の前からn個の要素をヒープ木とみなす)
+  // i: arr[i]を根とした部分木で最大ヒープが成り立つようかチェックする
+  // largest: 親と子の中で最大の値を持つindex
+  int largest = i;
+  int left = 2 * i + 1;
+  int right = 2 * i + 2;
+
+  if (left < n && arr[left] > arr[largest]) {
+    largest = left;
+  }
+
+  if (right < n && arr[right] > arr[largest]) {
+      largest = right;
+  }
+
+  if (largest != i) {
+    std::swap(arr[i], arr[largest]);
+    // 子と交換された親に対して、最大ヒープ木が成り立つかチェック
+    heapify(arr, n, largest);
+  }
+}
+
+
+int main() {
+  int N;
+  cin >> N;
+  vector<int> A(N);
+
+  for (int i = 0; i < N; ++i) {
+    cin >> A[i];
+  }
+  // 0-indexの配列を2分木とみなすとき、一番右下の親は n / 2 - 1 番目。
+  // 一番右下の親からヒープ化する。
+  for (int i = N / 2 - 1; i >= 0; i--) {
+    heapify(A, N, i);
+  }
+
+  for (auto &p : A) {
+    cout <<" " <<p;
+  }
+  cout << endl;
+
+  return 0;
+}
